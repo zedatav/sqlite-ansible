@@ -1,0 +1,148 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'community'}
+
+DOCUMENTATION='''
+module: sqlite
+author: zatav
+description: Module for manipulate sqlite databases
+ 
+options:
+  path:
+    description: list of database locations
+    required: yes
+  state:
+    description: action type
+    required: yes
+  request:
+    description: list of sqlite requests
+    required: no
+  dumpDir:
+    description: directory locations list for dumps
+    required: no	
+'''
+
+EXAMPLES='''
+- name: "SQLITE create database file"
+  sqlite:
+    state: present
+    path: ["/opt/test.db", "/home/user/test2.db"]	
+
+- name: "SQLITE request"
+  sqlite:
+    state: request
+    path: "/opt/test.db"	
+    request: ["CREATE TABLE test (name TEXT, age INTEGER)", "INSERT INTO test VALUES('bob', 30)"]
+
+- name: "SQLITE request 2"
+  sqlite:
+    state: request
+    path: "/opt/test.db"	
+    request: ["SELECT * FROM test"]
+  register: result
+- debug: var=result
+
+- name: "SQLITE dump database"
+  sqlite:
+    state: dump
+    path: "/opt/test.db"	
+    dumpDir: "/home/user/"
+
+- name: "SQLITE delete database"
+  sqlite:
+    state: absent
+    path: ["/opt/test.db", "/home/user/test2.db"]	
+'''
+
+RETURN = '''
+results:
+    description: return results of operations 
+'''
+
+from ansible.module_utils.basic import AnsibleModule
+import sqlite3 as sqlite
+import os
+from shutil import copy2
+
+
+def run_module():
+
+	try:
+		
+		moduleArgs = dict(
+				state = dict(required=True, type='str'),
+		    	path = dict(required=True, type='list'),
+		    	request	= dict(required=False, type='list'),
+				dumpDir = dict(required=False, type='list'),
+		)
+
+		result = dict(
+		    changed=False,
+		    result=[]
+		)
+
+		module = AnsibleModule(
+		    argument_spec=moduleArgs,
+		    supports_check_mode=True
+		)
+
+		if module.check_mode:
+		    module.exit_json(**result)
+
+		dbPaths  = module.params.get('path')
+		state  = module.params.get('state')
+
+		for i in dbPaths:
+
+			if state == "present":
+				if not os.path.exists(i):
+					sqlite.connect(i)
+					result['changed'] = True
+					result['result'].append(i)
+
+			elif state == "absent":
+				if os.path.exists(i):
+					os.remove(i)
+					result['changed'] = True
+					result['result'].append(i)
+
+			elif state == "request":	
+				requests  = module.params.get('request')
+				conn = sqlite.connect(i)
+				c = conn.cursor()
+				result['result'].append({i: []})
+				for j in requests:
+					c.execute(j)
+					response = c.fetchall()
+					result['result'][-1][i].append(response)
+				conn.commit()
+				conn.close()
+				result['changed'] = True
+
+			elif state == "dump":
+				dumpDirs  = module.params.get('dumpDir')
+				result['result'].append({i: []})
+				for j in dumpDirs:
+					if os.path.exists(i):
+						dumpName = "dump." + os.path.basename(i)
+						dumpPath = os.path.join(j, dumpName)
+						copy2(i, dumpPath)
+						result['changed'] = True
+						result['result'][-1][i].append(dumpPath)
+
+			else:
+				raise ValueError("This state value is not supported: " + state)
+		
+	except Exception as e:
+		module.fail_json(msg='Error - ' + str(e), **result)
+	else:
+		module.exit_json(**result)
+ 
+def main():
+    run_module()
+
+if __name__ == "__main__":
+	main()
