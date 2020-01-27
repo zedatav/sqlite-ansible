@@ -15,13 +15,13 @@ options:
     description: list of database locations
     required: yes
   state:
-    description: action type
+    description: action type (present;absent;request;dump)
     required: yes
   request:
-    description: list of sqlite requests
+    description: execute a list of sqlite requests (create the db if not exists)
     required: no
   dumpDir:
-    description: directory locations list for dumps
+    description: create dumps using list of directory locations
     required: no	
 '''
 
@@ -59,7 +59,9 @@ EXAMPLES='''
 
 RETURN = '''
 results:
-    description: return results of operations 
+    description: indicates if there was a change in the node in 'changed'
+				 results of operations in 'result' 
+				 optionnal error in 'failed'
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -99,39 +101,39 @@ def run_module():
 
 			if state == "present":
 				if not os.path.exists(i):
-					sqlite.connect(i)
+					sqlite.connect(i)	# create an empty file
 					result['changed'] = True
-					result['result'].append(i)
+					result['result'].append(i) # returns a list of created files
 
 			elif state == "absent":
 				if os.path.exists(i):
 					os.remove(i)
 					result['changed'] = True
-					result['result'].append(i)
+					result['result'].append(i)  # returns a list of deleted files
 
 			elif state == "request":	
 				requests  = module.params.get('request')
-				conn = sqlite.connect(i)
+				conn = sqlite.connect(i)	# also create the db
 				c = conn.cursor()
-				result['result'].append({i: []})
+				result['result'].append({i: []})	# returns a list of dict of paths and result of every request on each db (may be empty)
 				for j in requests:
 					c.execute(j)
 					response = c.fetchall()
-					result['result'][-1][i].append(response)
-				conn.commit()
+					result['result'][-1][i].append(response)	# form: [{pathdb : [result1, result2, ...]}, {pathdb2: [...]}]
+				conn.commit() 
 				conn.close()
 				result['changed'] = True
 
 			elif state == "dump":
 				dumpDirs  = module.params.get('dumpDir')
-				result['result'].append({i: []})
+				result['result'].append({i: []})	# returns a list of dict of paths and locations of dumps
 				for j in dumpDirs:
 					if os.path.exists(i):
 						dumpName = "dump." + os.path.basename(i)
-						dumpPath = os.path.join(j, dumpName)
+						dumpPath = os.path.join(j, dumpName)	# concatenate path and name of the dump (adapted for os)
 						copy2(i, dumpPath)
 						result['changed'] = True
-						result['result'][-1][i].append(dumpPath)
+						result['result'][-1][i].append(dumpPath)	# form: [{pathdb : [dump1, dump2, ...]}, {pathdb2: [...]}]
 
 			else:
 				raise ValueError("This state value is not supported: " + state)
