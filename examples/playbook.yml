@@ -1,0 +1,9 @@
+---
+- name: "sqlite-ansible playbook example"
+  hosts: Nodes
+  tasks:
+    - name: "sqlite request"
+      sqlite:
+        state: request
+        path: ["/root/test.db", "/home/user/test2.db"]
+        request: ["CREATE TABLE test (name TEXT, age INTEGER)", "INSERT INTO test VALUES('bob', 30)"]

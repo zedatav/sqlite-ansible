@@ -1,0 +1,12 @@
+---
+# sqlite-ansible role example
+- name: "sqlite dump"
+  sqlite:
+    state: dump
+    path: ["/root/test.db", "/home/user/test2.db"]
+    dumpDir: ["/opt"]
+
+- name: "sqlite absent"
+  sqlite:
+    state: absent
+    path: ["/root/test.db", "/home/user/test2.db"]
