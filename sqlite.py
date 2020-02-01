@@ -71,7 +71,10 @@ from shutil import copy2
 
 
 def run_module():
-
+	# try to execute instructions and catch all exceptions
+	# for formatting them and return them in "failed" inside the "result" list.
+	# if all goes well, return results of the actions 
+	# in "result" inside the "result" list.
 	try:
 		
 		moduleArgs = dict(
