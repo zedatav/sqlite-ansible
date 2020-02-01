@@ -37,7 +37,7 @@ Or use it directly in a playbook.
 
 ## Documentation
 
-[documentation](DOCUMENTATION.md).
+[documentation](DOCUMENTATION.md)
 
 and for examples and more informations:
 
