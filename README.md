@@ -1,6 +1,6 @@
 # sqlite-ansible
 
-This is a sqlite module for ansible. 
+This is a sqlite module for ansible.
 It can create one or more database files, delete them, dump them and execute sqlite queries.
 
 ## Getting Started
@@ -32,12 +32,19 @@ mv sqlite.py /etc/ansible/library
 
 ## Usage
 
-Using it in a [role](https://galaxy.ansible.com/docs/contributing/creating_role.html) following the examples in [sqlite.py](sqlite.py) and execute a [playbook](https://docs.ansible.com/ansible/latest/user_guide/playbooks.html) with the defined role inside. Or use it directly in a playbook.
+Using it in a [role](https://galaxy.ansible.com/docs/contributing/creating_role.html) following the examples in [sqlite.py](sqlite.py) and execute a [playbook](https://docs.ansible.com/ansible/latest/user_guide/playbooks.html) with the defined role inside.
+Or use it directly in a playbook.
 
-For examples and doc:
+## Documentation
+
+[documentation](DOCUMENTATION.md).
+
+and for examples and more informations:
+
 ```sh
 ansible-doc -M library sqlite
 ```
+
 ## Authors
 
 ZedAtav
