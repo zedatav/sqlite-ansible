@@ -9,7 +9,10 @@ To get a local copy up and running follow these simple steps.
 
 ### Prerequisites
 
-On nodes:
+* ansible
+```sh
+apt install ansible
+```
 
 * python3
 ```sh
