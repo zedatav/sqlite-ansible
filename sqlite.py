@@ -79,8 +79,8 @@ def run_module():
 		
 		moduleArgs = dict(
 				state = dict(required=True, type='str'),
-		    	path = dict(required=True, type='list'),
-		    	request	= dict(required=False, type='list'),
+				path = dict(required=True, type='list'),
+				request	= dict(required=False, type='list'),
 				dumpDir = dict(required=False, type='list'),
 		)
 
@@ -130,13 +130,14 @@ def run_module():
 			elif state == "dump":
 				dumpDirs  = module.params.get('dumpDir')
 				result['result'].append({i: []})	# returns a list of dict of paths and locations of dumps
-				for j in dumpDirs:
-					if os.path.exists(i):
-						dumpName = "dump." + os.path.basename(i)
-						dumpPath = os.path.join(j, dumpName)	# concatenate path and name of the dump (adapted for os)
-						copy2(i, dumpPath)
-						result['changed'] = True
-						result['result'][-1][i].append(dumpPath)	# form: [{pathdb : [dump1, dump2, ...]}, {pathdb2: [...]}]
+				if os.path.exists(i):
+					dumpName = "dump." + os.path.basename(i)
+					for j in dumpDirs:
+						if os.path.exists(j):
+							dumpPath = os.path.join(j, dumpName)	# concatenate path and name of the dump (adapted for os)
+							copy2(i, dumpPath)
+							result['changed'] = True
+							result['result'][-1][i].append(dumpPath)	# form: [{pathdb : [dump1, dump2, ...]}, {pathdb2: [...]}]
 
 			else:
 				raise ValueError("This state value is not supported: " + state)
